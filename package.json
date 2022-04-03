@@ -1,0 +1,29 @@
+{
+  "name": "@cdxoo/flat",
+  "version": "0.0.1",
+  "description": "does not flatten cats",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "npx mocha --bail test/*.spec.js"
+  },
+  "author": "Jan Schwalbe",
+  "license": "MIT",
+  "keywords": [
+    "flat",
+    "flatten",
+    "unflatten",
+    "cats"
+  ],
+  "devDependencies": {
+    "chai": "^4.3.6",
+    "mocha": "^9.2.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cdxOo/flat.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cdxOo/flat/issues"
+  },
+  "homepage": "https://github.com/cdxOo/flat#readme"
+}
