@@ -1,5 +1,5 @@
 'use strict';
-var traverse = require('./traverse');
+var traverse = require('@cdxoo/traverse');
 
 var flatten = (that, options = {}) => {
     var { delimiter = '.' } = options;
