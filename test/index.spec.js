@@ -47,7 +47,7 @@ describe('cats', () => {
     })
 })
 
-describe('flatten() levels', () => {
+describe('flatten() maxDepth', () => {
     var pairs = [
         [
             3,
@@ -58,14 +58,14 @@ describe('flatten() levels', () => {
     
     it('flatten', () => {
         for (var it of pairs) {
-            var [ levels, raw, flat ] = it;
-            expect(flatten(raw, { levels })).to.deep.eql(flat);
+            var [ maxDepth, raw, flat ] = it;
+            expect(flatten(raw, { maxDepth })).to.deep.eql(flat);
         }
     });
 
     it('unflatten', () => {
         for (var it of pairs) {
-            var [ levels, raw, flat ] = it;
+            var [ maxDepth, raw, flat ] = it;
             expect(unflatten(flat)).to.deep.eql(raw);
         }
     })
