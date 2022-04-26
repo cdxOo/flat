@@ -1,6 +1,6 @@
 {
   "name": "@cdxoo/flat",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "does not flatten cats",
   "main": "src/index.js",
   "scripts": {
