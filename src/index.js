@@ -2,13 +2,24 @@
 var traverse = require('@cdxoo/traverse');
 
 var flatten = (that, options = {}) => {
-    var { delimiter = '.' } = options;
+    var {
+        delimiter = '.',
+        levels = 0,
+    } = options;
+
     var out = {};
     
     traverse(that, (context) => {
         var { isLeaf, path, value } = context;
-        if (isLeaf) {
-            out[path.join(delimiter)] = value;
+        if (levels) {
+            if (path.length === levels) {
+                out[path.join(delimiter)] = value;
+            }
+        }
+        else {
+            if (isLeaf) {
+                out[path.join(delimiter)] = value;
+            }
         }
     }, options)
 

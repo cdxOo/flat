@@ -46,3 +46,28 @@ describe('cats', () => {
         expect(out['foo.bar'].meow).to.be.a('function');
     })
 })
+
+describe('flatten() levels', () => {
+    var pairs = [
+        [
+            3,
+            { foo: { bar: { baz: { quux: 42 }}}},
+            { 'foo.bar.baz': { quux: 42 }}
+        ]
+    ];
+    
+    it('flatten', () => {
+        for (var it of pairs) {
+            var [ levels, raw, flat ] = it;
+            expect(flatten(raw, { levels })).to.deep.eql(flat);
+        }
+    });
+
+    it('unflatten', () => {
+        for (var it of pairs) {
+            var [ levels, raw, flat ] = it;
+            expect(unflatten(flat)).to.deep.eql(raw);
+        }
+    })
+    
+})
