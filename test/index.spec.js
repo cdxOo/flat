@@ -17,6 +17,10 @@ describe('basics', () => {
             { 'foo.bar': 42 }
         ],
         [
+            { foo: { bar: 42, baz: 9001 }},
+            { 'foo.bar': 42, 'foo.baz': 9001 }
+        ],
+        [
             { foo: { bar: [ { quux: 42 } ]}},
             { 'foo.bar': [ { quux: 42 } ]},
         ],
@@ -53,6 +57,14 @@ describe('flatten() maxDepth', () => {
             3,
             { foo: { bar: { baz: { quux: 42 }}}},
             { 'foo.bar.baz': { quux: 42 }}
+        ],
+        [
+            3,
+            {
+                foo: { bar: { baz: { quux: 42 }}},
+                a: { b: 1 }
+            },
+            { 'foo.bar.baz': { quux: 42 }, 'a.b':1 }
         ]
     ];
     

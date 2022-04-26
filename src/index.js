@@ -10,9 +10,12 @@ var flatten = (that, options = {}) => {
     var out = {};
     
     traverse(that, (context) => {
-        var { isLeaf, path, value } = context;
+        var { isLeaf, path, value, parentNode } = context;
         if (maxDepth) {
-            if (path.length === maxDepth) {
+            if (path.length <= maxDepth) {
+                if (parentNode) {
+                    delete out[parentNode.path.join(delimiter)];
+                }
                 out[path.join(delimiter)] = value;
             }
         }
@@ -35,9 +38,11 @@ var unflatten = (that, options = {}) => {
         for (var i = 0; i < path.length; i += 1) {
             var token = path[i];
             var isLast = i === path.length - 1;
-            current[token] = (
-                isLast ? that[key] : {}
-            );
+            if (!Object.keys(current).includes(token)) {
+                current[token] = (
+                    isLast ? that[key] : {}
+                );
+            }
             current = current[token];
         }
     }
