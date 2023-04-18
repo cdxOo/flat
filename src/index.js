@@ -44,13 +44,24 @@ var unflatten = (that, options = {}) => {
         for (var i = 0; i < path.length; i += 1) {
             var token = path[i];
             var isLast = i === path.length - 1;
+            
+            if (current === null || current === undefined) {
+                throw new Error(inlineErrorMsg(`
+                    Cannot create property '${token}'
+                    on ${typeof current} '${current}'
+                    (path: '${path.join('.')}')
+                `));
+            }
+
             if (!Object.keys(current).includes(token)) {
                 var value = isLast ? that[key] : {};
 
                 if (typeof current !== 'object') {
                     if (handlePropertiesOnNonObjects !== 'throw') {
                         handlePropertiesOnNonObjects({
+                            root: out,
                             parent,
+                            erroneousPath: path.slice(0, i),
                             erroneousKey: parentToken,
                             erroneousValue: current,
                             currentKey: token,
@@ -58,12 +69,12 @@ var unflatten = (that, options = {}) => {
                         })
                     }
                     else {
-                        throw new Error(`
+                        throw new Error(inlineErrorMsg(`
                             Cannot create property '${token}'
                             on ${typeof current} '${current}'
                             (path: '${path.join('.')}'
                             in ${JSON.stringify(out)})
-                        `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
+                        `))
                     }
                 }
                 else {
@@ -77,6 +88,10 @@ var unflatten = (that, options = {}) => {
     }
     return out;
 }
+
+var inlineErrorMsg = (str) => (
+    str.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' ')
+);
 
 flatten.flatten = flatten;
 flatten.unflatten = unflatten;

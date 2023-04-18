@@ -118,13 +118,13 @@ describe('flatten array key indication', () => {
 })
 
 describe('unflatten mixed in non-objects', () => {
-    it('throws useful error by default', () => {
+    it('throws useful error by default (simple case)', () => {
         var error = undefined;
         try {
             unflatten({
                 'foo.bar': 'none',
                 'foo.bar.baz': true
-            }, { handleNonObjectProperties: ''});
+            });
         } catch (e) {
             error = e;
         }
@@ -134,8 +134,26 @@ describe('unflatten mixed in non-objects', () => {
             (path: 'foo.bar.baz' in {"foo":{"bar":"none"}})
         `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
     })
+
+    it('throws useful error by default (wierd case)', () => {
+        var error;
+        try {
+            unflatten({
+                'quux.x': 42,
+                'foo.bar': null,
+                'foo.bar.0.baz': true
+            });
+        } catch (e) {
+            error = e;
+        }
+        
+        expect(error.message).to.eql(`
+            Cannot create property '0' on object 'null'
+            (path: 'foo.bar.0.baz')
+        `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
+    })
     
-    it('user can pass custom handler', () => {
+    it('user can handle simple mixing', () => {
         var out = unflatten({
             'quux.x': 42,
             'foo.bar': 'none',
@@ -155,6 +173,43 @@ describe('unflatten mixed in non-objects', () => {
         expect(out).to.eql({
             quux: { x: 42 },
             foo: { bar: { baz: true }},
+        })
+    })
+
+    it('user can handle weird mixing', () => {
+        var out = unflatten({
+            'quux.x': 42,
+            'foo.bar': 'none',
+            'foo.bar.0.baz': true
+        }, { handlePropertiesOnNonObjects: (bag) => {
+            var {
+                root,
+                parent,
+                erroneousPath,
+                erroneousKey,
+                erroneousValue,
+                currentKey,
+                currentValue
+            } = bag;
+
+            if (typeof parent !== 'object') {
+                var current = root;
+                for (var [ ix, token ] of erroneousPath.entries()) {
+                    if (typeof current[token] !== 'object') {
+                        current[token] = {};
+                    }
+                    current = current[token];
+                }
+                current[currentKey] = currentValue;
+            }
+            else {
+                parent[erroneousKey] = { [currentKey]: currentValue };
+            }
+        }});
+
+        expect(out).to.eql({
+            quux: { x: 42 },
+            foo: { bar: { '0': { baz: true }}},
         })
     })
 })
