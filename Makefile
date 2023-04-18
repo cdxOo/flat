@@ -3,13 +3,13 @@
 test:
 	npm test
 
-bump-patch:
+bump-patch: test
 	npm version patch
 
-bump-minor:
+bump-minor: test
 	npm version minor
 
-bump-major:
+bump-major: test
 	npm version major
 
 publish: test
