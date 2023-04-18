@@ -30,8 +30,14 @@ var flatten = (that, options = {}) => {
 }
 
 var unflatten = (that, options = {}) => {
-    var { delimiter = '.' } = options;
+    var {
+        delimiter = '.',
+        handlePropertiesOnNonObjects = 'throw'
+    } = options;
+
     var out = {};
+    var parent = undefined;
+    var parentToken = undefined;
     for (var key of Object.keys(that)) {
         var path = key.split(delimiter);
         var current = out;
@@ -39,10 +45,33 @@ var unflatten = (that, options = {}) => {
             var token = path[i];
             var isLast = i === path.length - 1;
             if (!Object.keys(current).includes(token)) {
-                current[token] = (
-                    isLast ? that[key] : {}
-                );
+                var value = isLast ? that[key] : {};
+
+                if (typeof current !== 'object') {
+                    if (handlePropertiesOnNonObjects !== 'throw') {
+                        handlePropertiesOnNonObjects({
+                            parent,
+                            erroneousKey: parentToken,
+                            erroneousValue: current,
+                            currentKey: token,
+                            currentValue: value
+                        })
+                    }
+                    else {
+                        throw new Error(`
+                            Cannot create property '${token}'
+                            on ${typeof current} '${current}'
+                            (path: '${path.join('.')}'
+                            in ${JSON.stringify(out)})
+                        `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
+                    }
+                }
+                else {
+                    current[token] = value;
+                }
             }
+            parent = current;
+            parentToken = token;
             current = current[token];
         }
     }

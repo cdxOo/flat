@@ -83,3 +83,45 @@ describe('flatten() maxDepth', () => {
     })
     
 })
+
+describe('unflatten mixed in non-objects', () => {
+    it('throws useful error by default', () => {
+        var error = undefined;
+        try {
+            unflatten({
+                'foo.bar': 'none',
+                'foo.bar.baz': true
+            }, { handleNonObjectProperties: ''});
+        } catch (e) {
+            error = e;
+        }
+        
+        expect(error.message).to.eql(`
+            Cannot create property 'baz' on string 'none'
+            (path: 'foo.bar.baz' in {"foo":{"bar":"none"}})
+        `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
+    })
+    
+    it('user can pass custom handler', () => {
+        var out = unflatten({
+            'quux.x': 42,
+            'foo.bar': 'none',
+            'foo.bar.baz': true
+        }, { handlePropertiesOnNonObjects: (bag) => {
+            var {
+                parent,
+                erroneousKey,
+                erroneousValue,
+                currentKey,
+                currentValue
+            } = bag;
+
+            parent[erroneousKey] = { [currentKey]: currentValue };
+        }});
+
+        expect(out).to.eql({
+            quux: { x: 42 },
+            foo: { bar: { baz: true }},
+        })
+    })
+})
