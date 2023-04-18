@@ -84,6 +84,39 @@ describe('flatten() maxDepth', () => {
     
 })
 
+describe('flatten array key indication', () => {
+    it('no indication by default', () => {
+        var out = flatten({ foo: ['a', 'b', 'c'] }, {
+            traverseArrays: true
+        });
+        expect(out).to.eql({
+            'foo.0': 'a',
+            'foo.1': 'b',
+            'foo.2': 'c',
+        });
+    })
+
+    it('user can add custom indication', () => {
+        var out = flatten({ foo: ['a', 'b', 'c'] }, {
+            traverseArrays: true,
+            createPathToken: (bag) => {
+                var { parentNode, key, value } = bag;
+                if (Array.isArray(parentNode.value)) {
+                    return `[${key}]`
+                }
+                else {
+                    return String(key);
+                }
+            }
+        });
+        expect(out).to.eql({
+            'foo.[0]': 'a',
+            'foo.[1]': 'b',
+            'foo.[2]': 'c',
+        });
+    })
+})
+
 describe('unflatten mixed in non-objects', () => {
     it('throws useful error by default', () => {
         var error = undefined;
