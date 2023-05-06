@@ -29,62 +29,99 @@ var flatten = (that, options = {}) => {
     return out;
 }
 
+var getValue = (that, path = []) => {
+    //console.log('getValue()')
+    //console.log('=>', that, path);
+    var out = that;
+    for (var token of path) {
+        out = out[token];
+    }
+    return out;
+}
+
 var unflatten = (that, options = {}) => {
     var {
         delimiter = '.',
-        handlePropertiesOnNonObjects = 'throw'
+        handlePropertiesOnNonObjects = 'throw',
+        extraHandling,
     } = options;
 
     var out = {};
-    var parent = undefined;
-    var parentToken = undefined;
     for (var key of Object.keys(that)) {
         var path = key.split(delimiter);
-        var current = out;
-        for (var i = 0; i < path.length; i += 1) {
-            var token = path[i];
+        var route = [ { token: '#ROOT#', getValue: () => out }];
+        // NOTE: theese "let" initializaions are important with for
+        path.forEach((token, i) => {
+        //for (let i = 0; i < path.length; i += 1) {
+            //let token = path[i];
+            //let currentPath = [ ...path.slice(0,i), token ];
+            var currentPath = [ ...path.slice(0,i), token ];
+
             var isLast = i === path.length - 1;
-            
-            if (current === null || current === undefined) {
+            var [ container, parent ] = route;
+
+            var precheckValue = container.getValue();
+            if (precheckValue === null || precheckValue === undefined) {
                 throw new Error(inlineErrorMsg(`
                     Cannot create property '${token}'
-                    on ${typeof current} '${current}'
+                    on ${typeof precheckValue} '${precheckValue}'
                     (path: '${path.join('.')}')
                 `));
             }
 
-            if (!Object.keys(current).includes(token)) {
-                var value = isLast ? that[key] : {};
+            var value = (
+                isLast ? that[key] : container.getValue()[token] || {}
+            );
 
-                if (typeof current !== 'object') {
+            if (extraHandling) {
+                ({ token, value } = extraHandling({
+                    route,
+                    token,
+                    value
+                }));
+            }
+
+            //let containerValue = container.getValue();
+            var containerValue = container.getValue();
+
+            if (!Object.keys(containerValue).includes(token)) {
+                // NOTE: arrays will be detected as object as well
+                if (typeof containerValue !== 'object') {
                     if (handlePropertiesOnNonObjects !== 'throw') {
                         handlePropertiesOnNonObjects({
+                            route,
                             root: out,
-                            parent,
+                            parent: parent.getValue(),
                             erroneousPath: path.slice(0, i),
-                            erroneousKey: parentToken,
-                            erroneousValue: current,
+                            erroneousKey: container.token,
+                            erroneousValue: containerValue,
                             currentKey: token,
-                            currentValue: value
+                            currentValue: value,
                         })
                     }
                     else {
                         throw new Error(inlineErrorMsg(`
                             Cannot create property '${token}'
-                            on ${typeof current} '${current}'
+                            on ${typeof containerValue} '${containerValue}'
                             (path: '${path.join('.')}'
                             in ${JSON.stringify(out)})
                         `))
                     }
                 }
                 else {
-                    current[token] = value;
+                    containerValue[token] = value;
                 }
             }
-            parent = current;
-            parentToken = token;
-            current = current[token];
-        }
+
+            route.unshift({
+                path: currentPath,
+                token,
+                getValue: () => {
+                    //console.log({ i })
+                    return getValue(out, currentPath)
+                }
+            });
+        })
     }
     return out;
 }

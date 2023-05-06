@@ -13,6 +13,10 @@ describe('basics', () => {
     var cosmo = new Cat();
     var pairs = [
         [
+            { bar: 42, baz: 9001 },
+            { 'bar': 42, 'baz': 9001 }
+        ],
+        [
             { foo: { bar: 42 }},
             { 'foo.bar': 42 }
         ],
@@ -160,13 +164,14 @@ describe('unflatten mixed in non-objects', () => {
             'foo.bar.baz': true
         }, { handlePropertiesOnNonObjects: (bag) => {
             var {
+                route,
                 parent,
                 erroneousKey,
                 erroneousValue,
                 currentKey,
-                currentValue
+                currentValue,
             } = bag;
-
+            
             parent[erroneousKey] = { [currentKey]: currentValue };
         }});
 
@@ -211,5 +216,31 @@ describe('unflatten mixed in non-objects', () => {
             quux: { x: 42 },
             foo: { bar: { '0': { baz: true }}},
         })
+    })
+})
+
+describe('unflatten array keys', () => {
+    it('can unflatten to array via custom extra handling', () => {
+        var out = unflatten({
+            'foo.[0]': 'a',
+            'foo.[1]': 'b',
+            'foo.[2]': 'c',
+        }, {
+            traverseArrays: true,
+            extraHandling: (bag) => {
+                var { route, token, value } = bag;
+                var [ container, parent ] = route
+                if (
+                    !Array.isArray(container.getValue())
+                    && /\[\d+\]/.test(token)
+                ) {
+                    parent.getValue()[container.token] = []
+                }
+                return { token: token.replace(/[\[\]]/g, ''), value };
+            }
+        });
+        expect(out).to.eql({
+            foo: [ 'a', 'b', 'c' ]
+        });
     })
 })
