@@ -43,7 +43,6 @@ var unflatten = (that, options = {}) => {
     var {
         delimiter = '.',
         handlePropertiesOnNonObjects = 'throw',
-        extraHandling,
     } = options;
 
     var out = {};
@@ -72,14 +71,6 @@ var unflatten = (that, options = {}) => {
             var value = (
                 isLast ? that[key] : container.getValue()[token] || {}
             );
-
-            if (extraHandling) {
-                ({ token, value } = extraHandling({
-                    route,
-                    token,
-                    value
-                }));
-            }
 
             //let containerValue = container.getValue();
             var containerValue = container.getValue();

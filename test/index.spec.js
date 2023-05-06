@@ -209,25 +209,13 @@ describe('unflatten mixed in non-objects', () => {
 describe('unflatten array keys', () => {
     it('can unflatten to array via custom extra handling', () => {
         var out = unflatten({
-            'foo.[0]': 'a',
-            'foo.[1]': 'b',
-            'foo.[2]': 'c',
-        }, {
-            traverseArrays: true,
-            extraHandling: (bag) => {
-                var { route, token, value } = bag;
-                var [ container, parent ] = route
-                if (
-                    !Array.isArray(container.getValue())
-                    && /\[\d+\]/.test(token)
-                ) {
-                    parent.getValue()[container.token] = []
-                }
-                return { token: token.replace(/[\[\]]/g, ''), value };
-            }
+            'foo': [],
+            'foo.0': 'a',
+            'foo.1': 'b',
+            'foo.2.x': 'c',
         });
         expect(out).to.eql({
-            foo: [ 'a', 'b', 'c' ]
+            foo: [ 'a', 'b', { x: 'c' }]
         });
     })
 })
