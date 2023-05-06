@@ -6,6 +6,7 @@ var flatten = (that, options = {}) => {
         delimiter = '.',
         maxDepth = 0,
         traverseArrays = false,
+        initializeArrays = false,
     } = options;
 
     var out = {};
@@ -22,7 +23,7 @@ var flatten = (that, options = {}) => {
             }
         }
         else {
-            if (traverseArrays && Array.isArray(value)) {
+            if (traverseArrays && initializeArrays && Array.isArray(value)) {
                 out[key] = [];
             }
             if (isLeaf) {

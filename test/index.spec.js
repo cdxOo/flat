@@ -91,7 +91,8 @@ describe('flatten() maxDepth', () => {
 describe('flatten array key indication', () => {
     it('no indication by default', () => {
         var out = flatten({ foo: ['a', 'b', 'c'] }, {
-            traverseArrays: true
+            traverseArrays: true,
+            initializeArrays: true,
         });
         expect(out).to.eql({
             'foo': [],
@@ -115,7 +116,6 @@ describe('flatten array key indication', () => {
             }
         });
         expect(out).to.eql({
-            'foo': [],
             'foo.[0]': 'a',
             'foo.[1]': 'b',
             'foo.[2]': 'c',
