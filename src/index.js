@@ -5,23 +5,28 @@ var flatten = (that, options = {}) => {
     var {
         delimiter = '.',
         maxDepth = 0,
+        traverseArrays = false,
     } = options;
 
     var out = {};
     
     traverse(that, (context) => {
         var { isLeaf, path, value, parentNode } = context;
+        var key = path.join(delimiter);
         if (maxDepth) {
             if (path.length <= maxDepth) {
                 if (parentNode) {
                     delete out[parentNode.path.join(delimiter)];
                 }
-                out[path.join(delimiter)] = value;
+                out[key] = value;
             }
         }
         else {
+            if (traverseArrays && Array.isArray(value)) {
+                out[key] = [];
+            }
             if (isLeaf) {
-                out[path.join(delimiter)] = value;
+                out[key] = value;
             }
         }
     }, options)

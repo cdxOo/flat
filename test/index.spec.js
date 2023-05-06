@@ -94,6 +94,7 @@ describe('flatten array key indication', () => {
             traverseArrays: true
         });
         expect(out).to.eql({
+            'foo': [],
             'foo.0': 'a',
             'foo.1': 'b',
             'foo.2': 'c',
@@ -114,6 +115,7 @@ describe('flatten array key indication', () => {
             }
         });
         expect(out).to.eql({
+            'foo': [],
             'foo.[0]': 'a',
             'foo.[1]': 'b',
             'foo.[2]': 'c',
