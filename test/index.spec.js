@@ -163,16 +163,9 @@ describe('unflatten mixed in non-objects', () => {
             'foo.bar': 'none',
             'foo.bar.baz': true
         }, { handlePropertiesOnNonObjects: (bag) => {
-            var {
-                route,
-                parent,
-                erroneousKey,
-                erroneousValue,
-                currentKey,
-                currentValue,
-            } = bag;
-            
-            parent[erroneousKey] = { [currentKey]: currentValue };
+            var { route, token, value } = bag;
+            var [ container, parent ] = route;
+            parent.getValue()[container.token] = { [token]: value  };
         }});
 
         expect(out).to.eql({
@@ -187,28 +180,22 @@ describe('unflatten mixed in non-objects', () => {
             'foo.bar': 'none',
             'foo.bar.0.baz': true
         }, { handlePropertiesOnNonObjects: (bag) => {
-            var {
-                root,
-                parent,
-                erroneousPath,
-                erroneousKey,
-                erroneousValue,
-                currentKey,
-                currentValue
-            } = bag;
-
-            if (typeof parent !== 'object') {
-                var current = root;
-                for (var [ ix, token ] of erroneousPath.entries()) {
-                    if (typeof current[token] !== 'object') {
-                        current[token] = {};
+            var { route, path, token, value } = bag;
+            var [ root ] = route.slice(-1);
+            var [ container, parent ] = route;
+            
+            if (typeof parent.getValue() !== 'object') {
+                var current = root.getValue();
+                for (var it of path.slice(0, -1)) {
+                    if (typeof current[it] !== 'object') {
+                        current[it] = {};
                     }
-                    current = current[token];
+                    current = current[it];
                 }
-                current[currentKey] = currentValue;
+                current[token] = value;
             }
             else {
-                parent[erroneousKey] = { [currentKey]: currentValue };
+                parent.getValue()[container.token] = { [token]: value  };
             }
         }});
 

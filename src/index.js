@@ -90,13 +90,9 @@ var unflatten = (that, options = {}) => {
                     if (handlePropertiesOnNonObjects !== 'throw') {
                         handlePropertiesOnNonObjects({
                             route,
-                            root: out,
-                            parent: parent.getValue(),
-                            erroneousPath: path.slice(0, i),
-                            erroneousKey: container.token,
-                            erroneousValue: containerValue,
-                            currentKey: token,
-                            currentValue: value,
+                            path: currentPath,
+                            token,
+                            value
                         })
                     }
                     else {
