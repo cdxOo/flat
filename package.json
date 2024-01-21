@@ -4,7 +4,11 @@
   "description": "does not flatten cats",
   "main": "src/index.js",
   "scripts": {
-    "test": "npx mocha --bail test/*.spec.js"
+    "test": "npx mocha --bail test/*.spec.js",
+    "prepublishOnly": "npm test",
+    "release:dry": "npx release-it --dry-run --no-npm",
+    "release:beta": "release-it --preRelease=beta",
+    "release": "release-it"
   },
   "author": "Jan Schwalbe",
   "license": "MIT",
@@ -18,8 +22,9 @@
     "@cdxoo/traverse": "^0.0.2"
   },
   "devDependencies": {
-    "chai": "^4.3.6",
-    "mocha": "^9.2.2"
+    "chai": "^4.3.7",
+    "mocha": "^10.2.0",
+    "release-it": "^15.11.0"
   },
   "repository": {
     "type": "git",
