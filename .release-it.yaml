@@ -1,8 +1,6 @@
 hooks:
   'before:init':
     - 'npm test'
-    - 'npm run clean'
-    - 'npm run build'
 git:
   commitMessage: "chore(release): v${version}"
   requireCommits: false
