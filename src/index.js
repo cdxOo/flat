@@ -102,6 +102,14 @@ var unflatten = (that, options = {}) => {
                     }
                 }
                 else {
+                    if (containerValue[token] === containerValue.__proto__) {
+                        throw new Error(inlineErrorMsg(`
+                            Cannot create property '${token}'
+                            on ${typeof containerValue} '${containerValue}'
+                            (path: '${path.join('.')}'
+                            in ${JSON.stringify(out)})
+                        `))
+                    }
                     containerValue[token] = value;
                 }
             }

@@ -221,3 +221,39 @@ describe('unflatten array keys', () => {
         });
     })
 })
+
+describe('unflatten array keys', () => {
+    it('can unflatten to array via custom extra handling', () => {
+        var out = unflatten({
+            'foo': [],
+            'foo.0': 'a',
+            'foo.1': 'b',
+            'foo.2.x': 'c',
+        });
+        expect(out).to.eql({
+            foo: [ 'a', 'b', { x: 'c' }]
+        });
+    })
+})
+
+describe('nodeBoB', () => {
+    it('unflatten throws when trying to pollute', () => {
+        var malicious = [
+            { '__proto__.polluted': 'nodeBoB!' },
+            { 'constructor.prototype.polluted': 'nodeBoB!' },
+        ];
+
+        for (var obj of malicious) {
+            var err = undefined;
+            try {
+                var out = unflatten(obj);
+            }
+            catch (e) {
+                err = e;
+            }
+
+            expect(err).to.exists;
+            expect(err.message).to.match(/Cannot create.*polluted/)
+        }
+    })
+})
