@@ -24,7 +24,7 @@
   "devDependencies": {
     "chai": "^4.3.7",
     "mocha": "^10.2.0",
-    "release-it": "^15.11.0"
+    "release-it": "^17.0.1"
   },
   "repository": {
     "type": "git",
@@ -33,5 +33,8 @@
   "bugs": {
     "url": "https://github.com/cdxOo/flat/issues"
   },
-  "homepage": "https://github.com/cdxOo/flat#readme"
+  "homepage": "https://github.com/cdxOo/flat#readme",
+  "publishConfig": {
+    "access": "public"
+  }
 }
