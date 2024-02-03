@@ -48,14 +48,27 @@ describe('basics', () => {
 });
 
 describe('cats', () => {
-    it('meows', () => {
+    it('meow', () => {
         var cosmo = new Cat();
         var out = flatten({ foo: { bar: cosmo }});
         expect(out['foo.bar'].meow).to.be.a('function');
     })
 })
 
-describe('flatten() maxDepth', () => {
+describe('flatten() top-level array', () => {
+    it('just returns them by default', () => {
+        var tla = [{ foo: 42 }];
+        var out = flatten(tla);
+        expect(out).to.eql([{ foo: 42 }]);
+    })
+    it('handles them reasonably when traverseArrays is true', () => {
+        var tla = [{ foo: 42 }];
+        var out = flatten(tla, { traverseArrays: true });
+        expect(out).to.eql({ '0.foo': 42 });
+    })
+})
+
+describe('maxDepth', () => {
     var pairs = [
         [
             3,
@@ -88,7 +101,7 @@ describe('flatten() maxDepth', () => {
     
 })
 
-describe('flatten array key indication', () => {
+describe('flatten() array key indication', () => {
     it('no indication by default', () => {
         var out = flatten({ foo: ['a', 'b', 'c'] }, {
             traverseArrays: true,
@@ -123,7 +136,7 @@ describe('flatten array key indication', () => {
     })
 })
 
-describe('unflatten mixed in non-objects', () => {
+describe('unflatten() mixed in non-objects', () => {
     it('throws useful error by default (simple case)', () => {
         var error = undefined;
         try {
@@ -208,22 +221,8 @@ describe('unflatten mixed in non-objects', () => {
     })
 })
 
-describe('unflatten array keys', () => {
-    it('can unflatten to array via custom extra handling', () => {
-        var out = unflatten({
-            'foo': [],
-            'foo.0': 'a',
-            'foo.1': 'b',
-            'foo.2.x': 'c',
-        });
-        expect(out).to.eql({
-            foo: [ 'a', 'b', { x: 'c' }]
-        });
-    })
-})
-
-describe('unflatten array keys', () => {
-    it('can unflatten to array via custom extra handling', () => {
+describe('unflatten() arrays', () => {
+    it('does it properly', () => {
         var out = unflatten({
             'foo': [],
             'foo.0': 'a',

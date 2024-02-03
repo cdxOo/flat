@@ -10,7 +10,11 @@ var flatten = (that, options = {}) => {
     } = options;
 
     var out = {};
-    
+
+    if (Array.isArray(that) && !traverseArrays) {
+        return that;
+    }
+
     traverse(that, (context) => {
         var { isLeaf, path, value, parentNode } = context;
         var key = path.join(delimiter);
