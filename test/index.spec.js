@@ -232,6 +232,23 @@ describe('unflatten() arrays', () => {
         expect(out).to.eql({
             foo: [ 'a', 'b', { x: 'c' }]
         });
+    });
+
+    it('does it properly when initArrayOnNumericToken=true', () => {
+        var out = unflatten({
+            'foo.0': 'a',
+            'foo.1': 'b',
+            'foo.2.x': 'c',
+
+            'bar.y': '1', // XXX: when this is reversed then well have
+                          // an array
+            'bar.0': '2',
+        }, { initArrayOnNumericToken: true });
+
+        expect(out).to.eql({
+            foo: [ 'a', 'b', { x: 'c' }],
+            bar: { 'y': '1', '0': '2' }
+        });
     })
 })
 

@@ -49,16 +49,39 @@ var getValue = (that, path = []) => {
     return out;
 }
 
+var setValue = (that, path = [], override) => {
+    //console.log('getValue()')
+    //console.log('=>', that, path);
+    var target = that;
+    var lasttoken = undefined;
+    for (var [ix, token] of path.entries()) {
+        if (ix < path.length - 1) {
+            target = target[token];
+        }
+        else {
+            lasttoken = token;
+        }
+    }
+    target[lasttoken] = override;
+}
+
 var unflatten = (that, options = {}) => {
     var {
         delimiter = '.',
         handlePropertiesOnNonObjects = 'throw',
+        initArrayOnNumericToken = false,
     } = options;
 
-    var out = {};
+    var wrapper = { ROOT: undefined };
     for (var key of Object.keys(that)) {
         var path = key.split(delimiter);
-        var route = [ { token: '#ROOT#', getValue: () => out }];
+        
+        var route = [{
+            token: '#ROOT#',
+            getValue: () => wrapper.ROOT,
+            setValue: (override) => { wrapper.ROOT = override },
+        }];
+
         // NOTE: theese "let" initializaions are important with for
         path.forEach((token, i) => {
         //for (let i = 0; i < path.length; i += 1) {
@@ -69,6 +92,15 @@ var unflatten = (that, options = {}) => {
             var isLast = i === path.length - 1;
             var [ container, parent ] = route;
 
+            if (container.getValue() === undefined) {
+                if (initArrayOnNumericToken && /^\d+$/.test(String(token))) {
+                    container.setValue([]);
+                } 
+                else {
+                    container.setValue({});
+                }
+            }
+
             var precheckValue = container.getValue();
             if (precheckValue === null || precheckValue === undefined) {
                 throw new Error(inlineErrorMsg(`
@@ -78,8 +110,11 @@ var unflatten = (that, options = {}) => {
                 `));
             }
 
+
             var value = (
-                isLast ? that[key] : container.getValue()[token] || {}
+                isLast
+                ? that[key]
+                : container.getValue()[token]
             );
 
             //let containerValue = container.getValue();
@@ -101,7 +136,7 @@ var unflatten = (that, options = {}) => {
                             Cannot create property '${token}'
                             on ${typeof containerValue} '${containerValue}'
                             (path: '${path.join('.')}'
-                            in ${JSON.stringify(out)})
+                            in ${JSON.stringify(wrapper.ROOT)})
                         `))
                     }
                 }
@@ -111,7 +146,7 @@ var unflatten = (that, options = {}) => {
                             Cannot create property '${token}'
                             on ${typeof containerValue} '${containerValue}'
                             (path: '${path.join('.')}'
-                            in ${JSON.stringify(out)})
+                            in ${JSON.stringify(wrapper.ROOT)})
                         `))
                     }
                     containerValue[token] = value;
@@ -123,12 +158,15 @@ var unflatten = (that, options = {}) => {
                 token,
                 getValue: () => {
                     //console.log({ i })
-                    return getValue(out, currentPath)
+                    return getValue(wrapper.ROOT, currentPath)
+                },
+                setValue: (override) => {
+                    setValue(wrapper.ROOT, currentPath, override);
                 }
             });
         })
     }
-    return out;
+    return wrapper.ROOT;
 }
 
 var inlineErrorMsg = (str) => (
