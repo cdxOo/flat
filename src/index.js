@@ -68,101 +68,110 @@ var setValue = (that, path = [], override) => {
 var unflatten = (that, options = {}) => {
     var {
         delimiter = '.',
-        handlePropertiesOnNonObjects = 'throw',
+        //handlePropertiesOnNonObjects = 'throw',
         initArrayOnNumericToken = false,
     } = options;
 
+    // FIXME
+    var handlePropertiesOnNonObjects = 'throw';
+
     var wrapper = { ROOT: undefined };
-    for (var key of Object.keys(that)) {
+    var current = undefined;
+    var initValue = (token, value) => {
+        if (wrapper.ROOT === undefined) {
+            wrapper.ROOT = current = value;
+        }
+        else {
+            if (current[token] === undefined) {
+                current[token] = value;
+            }
+        }
+    }
+
+    for (var [ key, __value ] of Object.entries(that)) {
+        current = wrapper.ROOT;
+
         var path = key.split(delimiter);
-        
+
+        //console.log({ path });
+        //console.log({ current });
+
         var route = [{
             token: '#ROOT#',
-            getValue: () => wrapper.ROOT,
-            setValue: (override) => { wrapper.ROOT = override },
+            //getValue: () => wrapper.ROOT,
+            //setValue: (override) => { wrapper.ROOT = override },
         }];
 
-        // NOTE: theese "let" initializaions are important with for
-        path.forEach((token, i) => {
-        //for (let i = 0; i < path.length; i += 1) {
-            //let token = path[i];
-            //let currentPath = [ ...path.slice(0,i), token ];
-            var currentPath = [ ...path.slice(0,i), token ];
+        var prevToken = undefined;
+        path.forEach((token, ix) => {
+            var currentPath = [ ...path.slice(0,ix), token ];
+            var isLast = ix === path.length - 1;
 
-            var isLast = i === path.length - 1;
-            var [ container, parent ] = route;
-
-            if (container.getValue() === undefined) {
-                if (initArrayOnNumericToken && /^\d+$/.test(String(token))) {
-                    container.setValue([]);
-                } 
-                else {
-                    container.setValue({});
+            if (prevToken || wrapper.ROOT === undefined) {
+                var nextContainer = (
+                    initArrayOnNumericToken && /^\d+$/.test(String(token))
+                    ? [] : {}
+                );
+                initValue(prevToken, nextContainer);
+                if (prevToken) {
+                    current = current[prevToken];
                 }
             }
 
-            var precheckValue = container.getValue();
-            if (precheckValue === null || precheckValue === undefined) {
+            prevToken = token;
+
+            if (current === null || current === undefined) {
                 throw new Error(inlineErrorMsg(`
                     Cannot create property '${token}'
-                    on ${typeof precheckValue} '${precheckValue}'
+                    on ${typeof current} '${current}'
                     (path: '${path.join('.')}')
                 `));
             }
 
+            var containerValue = current;
+            if (current[token] === current.__proto__) {
+                throw new Error(inlineErrorMsg(`
+                    Cannot create property '${token}'
+                    on ${typeof current} '${current}'
+                    (path: '${path.join('.')}'
+                    in ${JSON.stringify(wrapper.ROOT)})
+                `))
+            }
+                
+            // NOTE: arrays will be detected as object as well
+            if (typeof current !== 'object') {
+                //if (handlePropertiesOnNonObjects !== 'throw') {
+                //    handlePropertiesOnNonObjects({
+                //        route,
+                //        path: currentPath,
+                //        token,
+                //        value
+                //    })
+                //}
+                //else {
+                    throw new Error(inlineErrorMsg(`
+                        Cannot create property '${token}'
+                        on ${typeof current} '${current}'
+                        (path: '${path.join('.')}'
+                        in ${JSON.stringify(wrapper.ROOT)})
+                    `))
+                //}
+            }
 
-            var value = (
-                isLast
-                ? that[key]
-                : container.getValue()[token]
-            );
-
-            //let containerValue = container.getValue();
-            var containerValue = container.getValue();
-
-            if (!Object.keys(containerValue).includes(token)) {
-                // NOTE: arrays will be detected as object as well
-                if (typeof containerValue !== 'object') {
-                    if (handlePropertiesOnNonObjects !== 'throw') {
-                        handlePropertiesOnNonObjects({
-                            route,
-                            path: currentPath,
-                            token,
-                            value
-                        })
-                    }
-                    else {
-                        throw new Error(inlineErrorMsg(`
-                            Cannot create property '${token}'
-                            on ${typeof containerValue} '${containerValue}'
-                            (path: '${path.join('.')}'
-                            in ${JSON.stringify(wrapper.ROOT)})
-                        `))
-                    }
-                }
-                else {
-                    if (containerValue[token] === containerValue.__proto__) {
-                        throw new Error(inlineErrorMsg(`
-                            Cannot create property '${token}'
-                            on ${typeof containerValue} '${containerValue}'
-                            (path: '${path.join('.')}'
-                            in ${JSON.stringify(wrapper.ROOT)})
-                        `))
-                    }
-                    containerValue[token] = value;
-                }
+            if (isLast) {
+                current[token] = __value;
             }
 
             route.unshift({
                 path: currentPath,
                 token,
-                getValue: () => {
-                    //console.log({ i })
-                    return getValue(wrapper.ROOT, currentPath)
-                },
-                setValue: (override) => {
-                    setValue(wrapper.ROOT, currentPath, override);
-                }
+                //getValue: () => {
+                //    //console.log({ i })
+                //    return getValue(wrapper.ROOT, currentPath)
+                //},
+                //setValue: (override) => {
+                //    setValue(wrapper.ROOT, currentPath, override);
+                //}
             });
         })
     }

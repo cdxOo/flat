@@ -4,7 +4,7 @@
   "description": "does not flatten cats",
   "main": "src/index.js",
   "scripts": {
-    "test": "npx mocha --bail test/*.spec.js",
+    "test": "npx mocha test/*.spec.js",
     "prepublishOnly": "npm test",
     "release:dry": "npx release-it --dry-run --no-npm",
     "release:beta": "release-it --preRelease=beta",
