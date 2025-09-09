@@ -171,7 +171,8 @@ describe('unflatten() mixed in non-objects', () => {
             (path: 'foo.bar.0.baz')
         `.replace(/(^\s+|\s+$)/g, '').replace(/\s+/g, ' '))
     })
-    
+   
+    // FIXME: im not sure why this exist tbh
     it('user can handle simple mixing', () => {
         var out = unflatten({
             'quux.x': 42,
@@ -189,6 +190,7 @@ describe('unflatten() mixed in non-objects', () => {
         })
     })
 
+    // FIXME: im not sure why this exist tbh
     it('user can handle weird mixing', () => {
         var out = unflatten({
             'quux.x': 42,
@@ -272,4 +274,17 @@ describe('nodeBoB', () => {
             expect(err.message).to.match(/Cannot create.*polluted/)
         }
     })
+})
+
+describe('unflatten() is reasonably fast', () => {
+    var payload = {};
+    for (var ix = 0; ix < 10000; ix += 1) {
+        payload[ix + 'foo.0'] = 'a';
+        payload[ix + 'foo.1'] = 'b';
+        payload[ix + 'foo.2.x'] = 'c';
+    }
+
+    it('10000', () => {
+        unflatten(payload);
+    });
 })

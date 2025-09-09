@@ -110,7 +110,6 @@ var unflatten = (that, options = {}) => {
                 `));
             }
 
-
             var value = (
                 isLast
                 ? that[key]
@@ -120,37 +119,36 @@ var unflatten = (that, options = {}) => {
             //let containerValue = container.getValue();
             var containerValue = container.getValue();
 
-            if (!Object.keys(containerValue).includes(token)) {
-                // NOTE: arrays will be detected as object as well
-                if (typeof containerValue !== 'object') {
-                    if (handlePropertiesOnNonObjects !== 'throw') {
-                        handlePropertiesOnNonObjects({
-                            route,
-                            path: currentPath,
-                            token,
-                            value
-                        })
-                    }
-                    else {
-                        throw new Error(inlineErrorMsg(`
-                            Cannot create property '${token}'
-                            on ${typeof containerValue} '${containerValue}'
-                            (path: '${path.join('.')}'
-                            in ${JSON.stringify(wrapper.ROOT)})
-                        `))
-                    }
+            if (containerValue[token] === containerValue.__proto__) {
+                throw new Error(inlineErrorMsg(`
+                    Cannot create property '${token}'
+                    on ${typeof containerValue} '${containerValue}'
+                    (path: '${path.join('.')}'
+                    in ${JSON.stringify(wrapper.ROOT)})
+                `))
+            }
+
+            // NOTE: arrays will be detected as object as well
+            if (typeof containerValue !== 'object') {
+                if (handlePropertiesOnNonObjects !== 'throw') {
+                    handlePropertiesOnNonObjects({
+                        route,
+                        path: currentPath,
+                        token,
+                        value
+                    })
                 }
                 else {
-                    if (containerValue[token] === containerValue.__proto__) {
-                        throw new Error(inlineErrorMsg(`
-                            Cannot create property '${token}'
-                            on ${typeof containerValue} '${containerValue}'
-                            (path: '${path.join('.')}'
-                            in ${JSON.stringify(wrapper.ROOT)})
-                        `))
-                    }
-                    containerValue[token] = value;
+                    throw new Error(inlineErrorMsg(`
+                        Cannot create property '${token}'
+                        on ${typeof containerValue} '${containerValue}'
+                        (path: '${path.join('.')}'
+                        in ${JSON.stringify(wrapper.ROOT)})
+                    `))
                 }
+            }
+            else {
+                containerValue[token] = value;
             }
 
             route.unshift({
