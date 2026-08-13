@@ -276,6 +276,20 @@ describe('nodeBoB', () => {
     })
 })
 
+describe('flatten() prefix/transformPathTokens', () => {
+    it('does call user provided transformTokens function', () => {
+        var payload = { '/foo': { '/bar': 'a' }};
+
+        var out = flatten(payload, {
+            prefix: '/', delimiter: '/',
+            transformPathTokens: (token) => token.replace(/\//g, '~1'),
+        });
+        expect(out).to.eql({
+            '/~1foo/~1bar': 'a',
+        })
+    })
+});
+
 describe('unflatten() is reasonably fast', () => {
     var payload = {};
     for (var ix = 0; ix < 10000; ix += 1) {

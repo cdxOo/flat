@@ -7,6 +7,9 @@ var flatten = (that, options = {}) => {
         maxDepth = 0,
         traverseArrays = false,
         initializeArrays = false,
+
+        prefix = undefined,
+        transformPathTokens = undefined,
     } = options;
 
     var out = {};
@@ -17,7 +20,14 @@ var flatten = (that, options = {}) => {
 
     traverse(that, (context) => {
         var { isLeaf, path, value, parentNode } = context;
-        var key = path.join(delimiter);
+        var key = (
+            transformPathTokens !== undefined
+            ? path.map(transformPathTokens).join(delimiter)
+            : path.join(delimiter)
+        );
+        if (prefix !== undefined) {
+            key = String(prefix) + key;
+        }
         if (maxDepth) {
             if (path.length <= maxDepth) {
                 if (parentNode) {
